@@ -1,0 +1,53 @@
+---
+title: "Build SBML from Sysrev Group Labels"
+---
+
+```{r, setup, include = FALSE}
+library(rsr)       # get sysrev data
+library(tidyverse) # tidy data management
+library(xml2)      # create sbml / xml documents
+
+# attnode builds lists that xml transform into <ATTName attr1=... attr2=.../>
+attnode = function(TAG,...){list(structure(list(),...)) |> set_names(TAG)}
+```
+
+sysrev 109491 has `listOfCompartments` `listOfSpecies` `listOfReactions` labels.
+```{r}
+# sysrev to celldesigner project compartment species and reaction tables
+token = rstudioapi::askForSecret("sysrev token w/ ontox access")
+atbls = rsr::get_answers_list(109491,token)
+
+# listOfCompartments - compartments have [metaid, id, size, units]
+listOfCompartments = atbls$Compartment |> 
+  select(metaid=ID,id=ID,size=Size,name=Name,units=Unit) |> distinct() |> 
+  pmap(~attnode("compartment",...)) |> flatten()
+
+# listOfSpecies - species have [metaid id name compartment initialAmount]
+listOfSpecies = atbls$Compound |> 
+  select(metaid=ID,id=ID,name=Name,
+         compartment=Location,initialAmount=InitialConcentration) |> 
+  distinct() |> 
+  pmap(~attnode("species",...)) |> flatten()
+
+# listOfReactions - species have [metaid id name compartment initialAmount]
+listOfReactions = atbls$Reaction |> 
+  select(metaid=ID,id=ID,reversible=`IsReversible?`) |> 
+  pmap(~attnode("reaction",...)) |> flatten()
+
+# final sbml model list
+model      = lst(listOfCompartments, listOfSpecies, listOfReactions) 
+sbml.model = as_xml_document(lst(model)) #get the xml
+
+cat(toString(sbml.model)) # print the xml
+```
+
+
+
+
+
+
+
+
+
+
+
