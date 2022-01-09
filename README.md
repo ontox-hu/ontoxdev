@@ -1,4 +1,4 @@
-# srontox
+# ontoxsr
 Tools and vignettes for sysrev-ontox integrations.
 
 ## Vignettes
