@@ -11,7 +11,7 @@ library(xml2)      # create sbml / xml documents
 attnode = function(TAG,...){list(structure(list(),...)) |> set_names(TAG)}
 ```
 
-sysrev 109491 has `listOfCompartments` `listOfSpecies` `listOfReactions` labels.
+sysrev.com/p/109491 has `listOfCompartments` `listOfSpecies` `listOfReactions` labels.
 ```{r}
 # sysrev to celldesigner project compartment species and reaction tables
 token = rstudioapi::askForSecret("sysrev token w/ ontox access")
