@@ -10,9 +10,19 @@ draft: true
 ---
 
 ```{r, setup}
-library(DT)
-library(halfbaked)
 knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+library(tidyverse)
+library(pins)
+intime = function(fn,timeout=2){
+  function(x){ 
+    cat(x)
+    R.utils::withTimeout({fn(x)},timeout = timeout) 
+  }
+}
+```
+
+```{r, other-setup}
+ontox.board = pins::board_s3("ontox")
 ```
 
 # Get our chemicals
@@ -22,7 +32,34 @@ OC = googlesheets4::read_sheet(gs,"CHEM_unique+tox map")
 colnames(OC)
 ```
 
-```{r}
-cid = OC$`PUBCHEM CID`
 
+```{r pubchem}
+get_aids     = function(cid){
+  slowget = rpubchem::get.aid.by.cid |> 
+    slowly(rate = rate_delay(pause = 0.1)) |> 
+    possibly(otherwise=integer())
+  
+  pbapply::pblapply(cid,slowget)
+}
+get_aid_desc = function(aid){
+  slowget = rpubchem::get.assay.desc |> 
+    slowly(rate = rate_delay(pause = 0.5)) |>
+    intime(timeout = 2) |> 
+    possibly(otherwise=list()) 
+  
+  pbapply::pblapply(aid,slowget)
+}
+
+# TODO this needs to get cached. How about an ontox bucket?
+PCC = OC  |> select(`PUBCHEM CID`) |> mutate(aid = get_aids(`PUBCHEM CID`))
+PCA = PCC |> unnest(aid) |> 
+  count(aid,name="cids") |> slice_max(n=20,order_by = cids,with_ties = F) |> 
+  mutate(aid.desc = get_aid_desc(aid)) |> 
+  unnest_wider(aid.desc)
+PCA
+```
+
+```{r chembl}
+cid = OC$`PUBCHEM CID`
+chemblr::get.activity(chembl.id = )
 ```
