@@ -1,0 +1,49 @@
+# Title of your site
+title = "Ontox-dev"
+
+# The URL of your site.
+# End your URL with a `/` trailing slash, e.g. `https://example.com/`.
+baseurl = "https://ontox.dev"
+
+# Name the theme folder in `themes/`.
+theme = "hugo-graphite"
+
+# Enable analytics by entering your Google Analytics tracking ID
+# googleAnalytics = "UA-..."
+
+
+relativeurls = false
+languageCode = "en-us"
+description = "A collection of posts demonstrating the use of ontox packages"
+disqusShortname = ""
+ignoreFiles = ['\.Rmd$', '_files$', '_cache$', '\.knit\.md$', '\.utf8\.md$']
+# below is critical for non-authors to show up in article listing
+preserveTaxonomyNames = true
+# uncomment the next line to disable listing authors
+# disableKinds = ["taxonomyTerm"]
+pygmentsUseClasses = true
+
+[permalinks]
+    blog = "blog/:year/:month/:slug/"
+
+[taxonomies]
+  category = "categories"
+  tag = "tags"
+
+[markup]
+  defaultMarkdownHandler = "goldmark"
+  [markup.tableOfContents]
+    endLevel = 2
+    ordered = false
+    startLevel = 2
+  [markup.goldmark.renderer]
+    unsafe = true
+
+[privacy]
+  [privacy.googleAnalytics]
+    anonymizeIP = true
+    respectDoNotTrack = true
+    useSessionStorage = true
+  [privacy.twitter]
+    enableDNT = true
+    privacyEnhanced = true

@@ -1,0 +1,28 @@
+---
+title: "Chemical Mining"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{rsr}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+date: 2022-02-01T08:24:02-05:00
+draft: true
+---
+
+```{r, setup}
+library(DT)
+library(halfbaked)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
+
+# Get our chemicals
+```{r warning=FALSE,message=FALSE}
+gs = googlesheets4::gs4_get("1EPIZl0LY7fbrbX_6YVxjHVzf9Cyw7XQWxGTh0B0mWGM")
+OC = googlesheets4::read_sheet(gs,"CHEM_unique+tox map")
+colnames(OC)
+```
+
+```{r}
+cid = OC$`PUBCHEM CID`
+
+```
