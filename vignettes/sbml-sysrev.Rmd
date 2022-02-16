@@ -7,15 +7,15 @@ library(rsr)       # get sysrev data
 library(tidyverse) # tidy data management
 library(xml2)      # create sbml / xml documents
 
-# attnode builds lists that xml transform into <ATTName attr1=... attr2=.../>
-attnode = function(TAG,...){list(structure(list(),...)) |> set_names(TAG)}
+# attnode builds lists that xml transform into <tag attr1=... attr2=.../>
+attnode  = function(tag,children=list(),...){list(structure(children,...)) |> set_names(tag)}
 ```
 
 sysrev.com/p/109491 has `listOfCompartments` `listOfSpecies` `listOfReactions` labels.
 ```{r}
 # sysrev to celldesigner project compartment species and reaction tables
 token = rstudioapi::askForSecret("sysrev token w/ ontox access")
-atbls = rsr::get_answers_list(109491,token)
+atbls = rsr::get_answers_list(109491,token=token)
 
 # listOfCompartments - compartments have [metaid, id, size, units]
 listOfCompartments = atbls$Compartment |> 
@@ -42,7 +42,28 @@ cat(toString(sbml.model)) # print the xml
 ```
 
 
+```{r}
+# convert lists to xml document
+sr_data = as_xml_document(lst(model = lst(listOfCompartments, listOfSpecies, listOfReactions)))
 
+# isolate compartment, reaction and species nodes as children
+sr_children <- xml_children(sr_data)
+
+# write final model and include isolated nodes 
+model = attnode(tag="model", metaid="documentname", id="documentname",
+                    children=lst(listOfCompartments, listOfSpecies, listOfReactions))
+
+sbml.root = attnode(tag="sbml",  xmlns="http://www.sbml.org/sbml/level2/version4", label=2, version=4,
+                    children=model)
+
+# (selecting <model/> node through xml_children() function to make it the parent node for the isolated nodes)
+sbml_model <- xml_new_root("sbml", "xmlns" = "http://www.sbml.org/sbml/level2/version4", "level" = "2", "version" = "4")
+xml_add_child(sbml_model, "model", "metaid" = "documentname", "id" = "documentname")
+sbml_children <- xml_children(sbml_model)
+c1 <- sbml_children[[1]]
+lapply(sr_children, function(x){xml_add_child(c1, x)} )
+cat(toString(sbml_model)) # print the xml
+```
 
 
 
