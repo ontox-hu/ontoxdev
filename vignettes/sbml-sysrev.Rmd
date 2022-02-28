@@ -53,7 +53,7 @@ sr_children <- xml_children(sr_data)
 model = attnode(tag="model", metaid="documentname", id="documentname",
                     children=lst(listOfCompartments, listOfSpecies, listOfReactions))
 
-sbml.root = attnode(tag="sbml",  xmlns="http://www.sbml.org/sbml/level2/version4", label=2, version=4,
+sbml  = attnode(tag="sbml", xmlns="http://www.sbml.org/sbml/level2/version4", label=2, version=4,
                     children=model)
 
 # (selecting <model/> node through xml_children() function to make it the parent node for the isolated nodes)

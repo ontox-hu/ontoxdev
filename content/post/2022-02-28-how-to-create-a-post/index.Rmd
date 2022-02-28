@@ -1,0 +1,24 @@
+---
+title: How to create a post
+author: Thomas Luechtefeld
+date: '2022-02-28'
+slug: how-to-create-a-post
+categories: []
+tags: []
+---
+
+Ontox-dev is a [blogdown](https://bookdown.org/yihui/blogdown/) application meant to facilitate sharing of ontox code.
+
+To create a new post:
+
+1\. clone this project from [github.com/ontox-hu/ontoxdev](https://github.com/ontox-hu/ontoxdev)\
+2. open the project in Rstudio \
+3. Run \`blogdown::new_post\`
+
+```{r,eval=FALSE}
+blogdown::new_post("The title of your post",ext = ".Rmd")
+```
+
+Then navigate to your post (it should open automatically in Rstudio), and edit the contents. Your post lives at `content/the-title-of-your-post`, and you will edit the Rmd file created there.
+
+Running `blogdown::serve_site()` will create live updates to a locally hosted version of this site while you edit your blog post. Learn more about working with blogdown at <https://pkgs.rstudio.com/blogdown/>

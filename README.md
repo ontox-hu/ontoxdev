@@ -1,5 +1,8 @@
-# ontoxsr
-Tools and vignettes for sysrev-ontox integrations.
+# ontoxdev
 
-## Vignettes
-* [Build SBML from Sysrev Group Labels](https://github.com/ontox-hu/srontox/blob/main/vignettes/sbml-sysrev.Rmd) - a first start at building sbml from the [cell designer sysrev](https://sysrev.com/p/109491 )
+This repo is the source for [ontox.dev](https://ontox.dev/) which facilitates code sharing and documentation for ontox-project repositories.
+
+## Outline
+
+1.  Learn how to create a post
+2.  Chemical Mining
