@@ -57,7 +57,7 @@ reactions <- atbls$Reaction %>%
       }) %>%
       set_names(pull(x[2]))
     }) %>%
-  set_names(pull(distinct(select(reactions, id))))
+  set_names(pull(arrange(distinct(select(atbls$Reaction, ID)), ID)))
 
 # listOfReactions - reactions have [metaid id reversible]
 listOfReactions <- atbls$Reaction %>%
