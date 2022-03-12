@@ -4,5 +4,5 @@ This repo is the source for [ontox.dev](https://ontox.dev/) which facilitates co
 
 ## Outline
 
-1.  Learn how to create a post
+1.  Create a post
 2.  Chemical Mining
