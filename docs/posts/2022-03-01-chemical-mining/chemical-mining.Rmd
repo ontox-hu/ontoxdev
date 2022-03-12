@@ -1,0 +1,67 @@
+---
+title: "Chemical Mining"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{rsr}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+date: 2022-02-01T08:24:02-05:00
+draft: true
+---
+
+```{r, setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+library(tidyverse)
+library(pins)
+intime = function(fn,timeout=2){
+  function(x){ 
+    cat(x)
+    R.utils::withTimeout({fn(x)},timeout = timeout) 
+  }
+}
+```
+
+```{r, other-setup}
+ontox.board = pins::board_s3("ontox")
+```
+
+# Get our chemicals
+```{r warning=FALSE,message=FALSE,eval=FALSE}
+gs = googlesheets4::gs4_get("1EPIZl0LY7fbrbX_6YVxjHVzf9Cyw7XQWxGTh0B0mWGM")
+OC = googlesheets4::read_sheet(gs,"CHEM_unique+tox map")
+colnames(OC)
+```
+
+# Pubchem 
+```{r pubchem-aid-counts,eval=FALSE}
+get_aids     = function(cid){
+  slowget = rpubchem::get.aid.by.cid |> 
+    slowly(rate = rate_delay(pause = 0.1)) |> 
+    possibly(otherwise=integer())
+  
+  pbapply::pblapply(cid,slowget)
+}
+
+# TODO this needs to get cached. How about an ontox bucket?
+PCC = OC  |> select(`PUBCHEM CID`) |> mutate(aid = get_aids(`PUBCHEM CID`))
+PCC |> unnest(aid) |> count(aid,name = "cids") |> arrange(-cids)
+```
+
+```{r pubchem-aid-desc,eval=FALSE}
+get_aid_desc = function(aid){
+  slowget = rpubchem::get.assay.desc |> 
+    slowly(rate = rate_delay(pause = 0.5)) |>
+    intime(timeout = 2) |> 
+    possibly(otherwise=list()) 
+  
+  pbapply::pblapply(aid,slowget)
+}
+
+PCA = PCC |> unnest(aid) |> 
+  count(aid,name="cids") |> slice_max(n=20,order_by = cids,with_ties = F) |> 
+  mutate(aid.desc = get_aid_desc(aid)) |> 
+  unnest_wider(aid.desc)
+PCA |> unnest_wider(aid.desc) |> select(aid,assay.desc)
+```
+
+

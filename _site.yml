@@ -2,7 +2,7 @@ name: "Ontox"
 title: "Ontox-Dev"
 description: |
   A collection of rmarkdown notebooks for ontox.
-output_dir: "_site"
+output_dir: "docs"
 navbar:
   right:
     - text: "About"
