@@ -6,15 +6,15 @@
       "description": "Some additional details about the website",
       "author": [],
       "contents": "\n\n\n\n",
-      "last_modified": "2022-03-12T15:30:22-05:00"
+      "last_modified": "2022-03-12T16:03:11-05:00"
     },
     {
       "path": "index.html",
       "title": "Distill for Ontox",
       "description": "Posts describing [**ontox-project.eu**](https://ontox-project.eu/) packages.\n",
       "author": [],
-      "contents": "\n\n\n\n\n\ntest post\n\n\n\nmodified\n2022-03-12 20:06:27\n\n\nA short description of the post.\n\n\n\n\n\n\nSysrev predictions and pmids\n\n\n\nmodified\n2022-03-12 19:57:30\n\n\nproject-predictions-and-pmids\n\n\n\n\n\nSysrev to SBML\n\n\n\nmodified\n2022-03-12 17:57:05\n\n\nBuild SBML from Sysrev Tables\n\n\n\n\nAdd a post\ngit clone ontox-hu/ontoxdev and:\n\n\ndevtools::load_all(\"ontoxdev\")   # load ontoxdev\nontoxdev::create_post(\"my-post\") # create the post\nontoxdev::render_site()          # render the site\n\n\n\ncommit your changes and push them to ontox-hu/ontoxdev\n\n\n\n",
-      "last_modified": "2022-03-12T15:30:23-05:00"
+      "contents": "\n\n\n\n\n\nSysrev predictions and pmids\n\n\n\nmodified\n2022-03-12 20:44:06\n\n\nproject-predictions-and-pmids\n\n\n\n\n\nSysrev to SBML\n\n\n\nmodified\n2022-03-12 20:34:40\n\n\nBuild SBML from Sysrev Tables\n\n\n\n\n\nSysrev predictions and pmids\n\n\n\nmodified\n2022-03-12 20:34:40\n\n\nproject-predictions-and-pmids\n\n\n\n\nAdd a post\ngit clone ontox-hu/ontoxdev and:\n\n\ndevtools::load_all(\"ontoxdev\")   # load ontoxdev\nontoxdev::create_post(\"my-post\") # create the post\nontoxdev::render_site()          # render the site\n\n\n\ncommit your changes and push them to ontox-hu/ontoxdev\n\n\n\n",
+      "last_modified": "2022-03-12T16:03:13-05:00"
     }
   ],
   "collections": ["posts/posts.json"]

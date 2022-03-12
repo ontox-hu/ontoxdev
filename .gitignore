@@ -2,7 +2,6 @@
 .Rhistory
 .RData
 .Ruserdata
-public
-.DS_Store
-README.html
-.hugo_build.lock
+
+# ignore everything in _posts except Rmd files
+_posts/*
