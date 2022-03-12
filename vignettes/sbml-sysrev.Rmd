@@ -8,63 +8,79 @@ library(tidyverse) # tidy data management
 library(xml2)      # create sbml / xml documents
 
 # attnode builds lists that xml transform into <tag attr1=... attr2=.../>
-attnode  = function(tag,children=list(),...){list(structure(children,...)) |> set_names(tag)}
+attnode <- function(tag, children=list(), ...){list(structure(children, ...)) %>% set_names(tag)}
 ```
 
 sysrev.com/p/109491 has `listOfCompartments` `listOfSpecies` `listOfReactions` labels.
 ```{r}
 # sysrev to celldesigner project compartment species and reaction tables
-token = rstudioapi::askForSecret("sysrev token w/ ontox access")
-atbls = rsr::get_answers_list(109491,token=token)
+token <- rstudioapi::askForSecret("sysrev token w/ ontox access")
+atbls <- rsr::get_answers_list(109491, token=token)
 
 # listOfCompartments - compartments have [metaid, id, size, units]
-listOfCompartments = atbls$Compartment |> 
-  select(metaid=ID,id=ID,size=Size,name=Name,units=Unit) |> distinct() |> 
-  pmap(~attnode("compartment",...)) |> flatten()
+listOfCompartments <- atbls$Compartment %>% 
+  select(metaid=ID, id=ID, size=Size, name=Name, units=Unit) %>% 
+  distinct() %>%
+  pmap(~attnode("compartment", ...)) %>%
+  flatten()
 
 # listOfSpecies - species have [metaid id name compartment initialAmount]
-listOfSpecies = atbls$Compound |> 
-  select(metaid=ID,id=ID,name=Name,
-         compartment=Location,initialAmount=InitialConcentration) |> 
-  distinct() |> 
-  pmap(~attnode("species",...)) |> flatten()
+listOfSpecies <- atbls$Compound %>% 
+  select(metaid=ID, id=ID, name=Name, compartment=Location, initialAmount=InitialConcentration) %>% 
+  distinct() %>% 
+  pmap(~attnode("species", ...)) %>%
+  flatten()
 
-# listOfReactions - species have [metaid id name compartment initialAmount]
-listOfReactions = atbls$Reaction |> 
-  select(metaid=ID,id=ID,reversible=`IsReversible?`) |> 
-  pmap(~attnode("reaction",...)) |> flatten()
+# individual reactions for listOfReactions
+reactions <- atbls$Reaction %>% 
+  # Seperate the reactions into two columns 
+  # (this option can be dropped if the table format in Sysrev/Phymdos is changed from 'ReactionFormula' to 'reactant' and 'product')
+  separate(ReactionFormula, into = c("reactant", "product"), sep = "<=>") %>% 
+  # Select the necesary columns, remove duplicates and arrange by id 
+  # (arranging is necesary because of the overlap with listOfReactions)
+  select(id=ID, listOfReactants=reactant, listOfProducts=product, listOfModifiers=Regulator) %>% 
+  distinct() %>%
+  arrange(id) %>%
+  # Change format of the table so reactions can get a unique metaid, also group by id and split into list
+  pivot_longer(cols=c("listOfReactants","listOfProducts", "listOfModifiers"), names_to = "type", values_to = "species") %>%
+  cbind(metaid = paste0("CDMT", 1:nrow(.))) %>% 
+  mutate(species = trimws(species)) %>% 
+  group_by(id) %>% 
+  group_split() %>% 
+  # Separate reactions into SBML formatted list
+  lapply(function(x){
+     apply(x[2], 1, function(y){
+      x[which(x[2] == y),] %>% 
+      select(metaid, species) %>%
+      pmap(~attnode("speciesReference",...)) %>% 
+      flatten()
+      }) %>%
+      set_names(pull(x[2]))
+    }) %>%
+  set_names(pull(arrange(distinct(select(atbls$Reaction, ID)), ID)))
 
-# final sbml model list
-model      = lst(listOfCompartments, listOfSpecies, listOfReactions) 
-sbml.model = as_xml_document(lst(model)) #get the xml
-
-cat(toString(sbml.model)) # print the xml
-```
-
-
-```{r}
-# convert lists to xml document
-sr_data = as_xml_document(lst(model = lst(listOfCompartments, listOfSpecies, listOfReactions)))
-
-# isolate compartment, reaction and species nodes as children
-sr_children <- xml_children(sr_data)
+# listOfReactions - reactions have [metaid id reversible]
+listOfReactions <- atbls$Reaction %>%
+  mutate(`IsReversible?` = tolower(`IsReversible?`)) %>%
+  select(metaid=ID, id=ID, reversible=`IsReversible?`) %>%
+  distinct() %>%
+  arrange(id) %>%
+  pmap(~attnode("reaction", ..., children = flatten(reactions[.]))) %>%
+  flatten()
 
 # write final model and include isolated nodes 
-model = attnode(tag="model", metaid="documentname", id="documentname",
-                    children=lst(listOfCompartments, listOfSpecies, listOfReactions))
-
-sbml  = attnode(tag="sbml", xmlns="http://www.sbml.org/sbml/level2/version4", label=2, version=4,
+model <- attnode(tag="model", metaid="documentname", id="documentname",
+                 children=lst(listOfCompartments, listOfSpecies, listOfReactions))
+sbml.root <- attnode(tag="sbml", xmlns="http://www.sbml.org/sbml/level2/version4", label=2, version=4,
                     children=model)
+sbml_model <- as_xml_document(sbml.root)
 
-# (selecting <model/> node through xml_children() function to make it the parent node for the isolated nodes)
-sbml_model <- xml_new_root("sbml", "xmlns" = "http://www.sbml.org/sbml/level2/version4", "level" = "2", "version" = "4")
-xml_add_child(sbml_model, "model", "metaid" = "documentname", "id" = "documentname")
-sbml_children <- xml_children(sbml_model)
-c1 <- sbml_children[[1]]
-lapply(sr_children, function(x){xml_add_child(c1, x)} )
-cat(toString(sbml_model)) # print the xml
+ # print the xml to consle
+cat(toString(sbml_model))
+
+# print the xml to a file 
+write_xml(sbml_model, "srtest2.xml")
 ```
-
 
 
 
