@@ -1,5 +1,6 @@
 ---
-title: "Build SBML from Sysrev Group Labels"
+title: "Sysrev to SBML"
+description: "Build SBML from Sysrev Tables"
 ---
 
 ```{r, setup, include = FALSE}

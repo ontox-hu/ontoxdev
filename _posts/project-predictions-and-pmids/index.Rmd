@@ -1,8 +1,8 @@
 ---
-title: project predictions and pmids
+title: Sysrev predictions and pmids
 author: Thomas Luechtefeld
 date: '2022-02-28'
-slug: project-predictions-and-pmids
+description: project-predictions-and-pmids
 categories: []
 tags: []
 ---

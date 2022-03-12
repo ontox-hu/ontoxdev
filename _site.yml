@@ -4,6 +4,7 @@ description: |
   A collection of rmarkdown notebooks for ontox.
 output_dir: "docs"
 navbar:
+  title: "Ontox-Dev"
   right:
     - text: "About"
       href: about.html
@@ -13,3 +14,4 @@ navbar:
     #     href: 
         
 output: distill::distill_article
+# output: distill::distill_website

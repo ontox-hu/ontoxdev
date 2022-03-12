@@ -1,15 +1,30 @@
 ---
-title: "test2"
+title: "Distill for Ontox"
 description: |
-  Welcome to the website. I hope you enjoy it!
+  Posts describing [**ontox-project.eu**](https://ontox-project.eu/) packages.
 site: distill::distill_website
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
-
-# Learn more about creating websites with Distill at:
-# https://rstudio.github.io/distill/website.html
-
+library(ontoxdev)
+library(purrr)
+library(tidyr)
+library(htmltools)
+# knitr::opts_chunk$set(echo = FALSE)
 ```
 
+```{r posts,echo=FALSE}
+ontoxdev:::post_description()
+```
+
+### Add a post
+
+git clone [ontox-hu/ontoxdev](https://github.com/ontox-hu/ontoxdev) and:
+
+```{r add-post,echo=T,eval=F} 
+devtools::load_all("ontoxdev")   # load ontoxdev
+ontoxdev::create_post("my-post") # create the post
+ontoxdev::render_site()          # render the site
+```
+
+commit your changes and push them to [ontox-hu/ontoxdev](https://github.com/ontox-hu/ontoxdev)
