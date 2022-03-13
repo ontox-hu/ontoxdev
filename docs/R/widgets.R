@@ -1,15 +1,6 @@
-#' html describing all of the ontox-dev posts
-#' @import purrr
-#' @return
-#' @export
-post_description <- function(){
-  rmd2yaml = purrr::compose(~ yaml::read_yaml(text = .),
-                            ~ paste(., collapse="\n"),
-                            ~ head_while(.,~ !grepl("---",.)),
-                            ~ readr::read_lines(.,skip=1))
-
-  posts     = list.files(path = "_posts",pattern = "*.Rmd",recursive = T,full.names = T) |>
-    map( ~ list(yml=rmd2yaml(.),file = .)) |>
+posts_ls <- function(){
+  posts  = list.files(path = "_posts",pattern = "*.Rmd",recursive = T,full.names = T) |>
+    map( ~ list(yml=rmarkdown::yaml_front_matter(.),file = .)) |>
     keep(~ all(c("title","description") %in% names(.$yml)))
 
   post2link = function(file,node){
@@ -23,11 +14,17 @@ post_description <- function(){
         div(description,style="margin-left:5px,margin-top:4px"))
   }
 
-  ptbl = posts |> transpose() |> as_tibble() |> unnest_wider(yml) |>
+  posts |> transpose() |> as_tibble() |> unnest_wider(yml) |>
     dplyr::mutate(modified = map(file,~ file.info(.)$mtime |> lubridate::as_datetime())) %>%
     dplyr::mutate(card = pmap(.,post2card)) |>
     dplyr::select(title,description,modified,card) |> unnest(!card) |>
     dplyr::arrange(desc(modified))
+}
 
-  map(ptbl$card,~ tags$div(.,tags$br())) |> tags$div(class="display-block")
+#' html describing all of the ontox-dev posts
+#' @import purrr
+#' @return
+#' @export
+post_html <- function(){
+  map(posts_ls()$card,~ tags$div(.,tags$br())) |> tags$div(class="display-block")
 }
