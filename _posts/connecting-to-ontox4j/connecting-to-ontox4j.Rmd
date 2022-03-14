@@ -1,0 +1,102 @@
+---
+title: "Connecting to ontox4j"
+description: |
+  Connect and query the ontox4j graph database. TODO don't use distill
+author:
+  - name: "Marc A.T. Teunis, Ph.D. & Tom Luechtefeld"
+    url: {}
+date: 2022-03-12
+tags: [wip]
+output:
+  distill::distill_article:
+    self_contained: false
+---
+
+# Install & Connect 
+We need neo4j for python, R doesn't have an active driver. So we use reticulate:
+
+1. Install reticulate `install.packages("reticulate")`
+2. Create a conda environment `reticulate::conda_install()`
+3. Install neo4j `pip install neo4j`
+
+Connect to ontox4j with the python driver. First install reticulate
+
+```{r}
+neo4j  <- reticulate::import("neo4j")
+```
+
+Then use the very simple python driver wrapper below. We can add this to an eventual package ([](# https://cran.r-project.org/web/packages/reticulate/vignettes/package.html)):
+
+```{python}
+from neo4j import GraphDatabase
+class ontox4j_driver: 
+  
+    def __init__(self, uri, user, password):
+        self.driver = GraphDatabase.driver(uri, auth=(user, password))
+
+    def close(self):
+        self.driver.close()
+
+    def query(self,query):
+        with self.driver.session() as session:
+            tx   = session.begin_transaction()
+            return [row for row in tx.run(query)]
+```
+
+# Create some proteins
+
+Ontox4j already has a few chemical relationships. Create a cypher query to view them.
+
+```{r}
+con = reticulate::py$ontox4j_driver(Sys.getenv("ontox4j_uri"),Sys.getenv("ontox4j_usr"),Sys.getenv("ontox4j_pw"))
+
+
+create_node  = \(tag,...){ # Create nodes
+  node    = list(...)[-1]
+  keyvals = glue::glue("{names(node)}:'{node}'") |> paste(collapse=",")
+  query   = glue::glue("CREATE (x:{tag} {{ {keyvals} }}) RETURN x")
+  con$query(query)[[1]]
+}
+
+nodes     = list(
+  RALDH2    = create_node("Protein" ,name="RALDH2",type="enzyme",uniprot="094788"),
+  RDH10     = create_node("Protein", name='RDH10',type='enzyme',uniprot='Q8IZV5'),
+  VIT_A_ext = create_node("Compound",name='Vitamin A_e',type="vitamin",pubchem_cid="445354",location="extracellular"),
+  VIT_A_int = create_node("Compound",name='Vitamin A_i',type='vitamin',pubchem_cid='445354',location='intracellular'),
+  ATRA      = create_node("Compound",name= 'ATRA',type= 'metabolite',pubchem_cid= '444795',location= 'intracellular'),
+  Retinald  = create_node("Compound",name='Retinaldehyde',type='metabolite',pubchem_cid='638015'))
+
+
+create_edge = \(rtag,tag1,name1,tag2,name2){ # create relationships TODO use create_edge(node1, "relationship", node2)
+  query = glue::glue("MATCH (n1:{tag1}),(n2:{tag2}) WHERE n1.name='{name1}' AND n2.name='{name2}'
+                     CREATE (n1)-[r:{rtag}]->(n2) 
+                     RETURN n1, n2, r")
+  con$query(query)
+}
+
+`vitai->rdh10` = create_edge("metabolizes","Compound","Vitamin A_i","Protein","RDH10")
+`vitae->rdh10` = create_edge("translocates","Compound","Vitamin A_e","Protein","STRA6")
+
+`vitai->reti`  = create_edge("is_converted_to","Compound","Vitamin A_i","Compound","Retinaldehyde")
+`vitae->vitai` = create_edge("translocated_from","Compound","Vitamin A_e","Compound","Vitamin A_i")
+
+`raldh->reti`  = create_edge("metabolizes","Protein","RALDH2", "Compound","Retinaldehyde")
+```
+
+# query the results 
+```{r}
+nodes = con$query("MATCH (n) RETURN n") |> purrr::map(~ .$data()$n) |> 
+  purrr::transpose() |> tibble::as_tibble() |> 
+  tidyr::unnest(everything())
+
+# TODO some work to do here
+edges = con$query("MATCH (n) MATCH (n)-[r]->(m) RETURN n,r,m;")
+```
+
+# clean up
+```{r}
+con$query("MATCH (n) DETACH DELETE n") # This doesn't work, not sure why.
+con$close()
+```
+
+

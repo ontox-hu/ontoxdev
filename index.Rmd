@@ -1,7 +1,7 @@
 ---
-title: "Distill for Ontox"
+title: "Distill Ontox"
 description: |
-  Posts describing [**ontox-project.eu**](https://ontox-project.eu/) packages.
+  Programming toxicology, ontologies, and chemical hazard models. Part of the [**Ontox Project**](https://ontox-project.eu/)
 site: distill::distill_website
 ---
 
@@ -14,7 +14,7 @@ library(htmltools)
 ```
 
 ```{r posts,echo=FALSE}
-ontoxdev:::post_description()
+ontoxdev:::post_html()
 ```
 
 ### Add a post

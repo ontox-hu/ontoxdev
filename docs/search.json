@@ -6,15 +6,15 @@
       "description": "Some additional details about the website",
       "author": [],
       "contents": "\n\n\n\n",
-      "last_modified": "2022-03-12T23:01:43-05:00"
+      "last_modified": "2022-03-13T22:50:28-04:00"
     },
     {
       "path": "index.html",
       "title": "Distill Ontox",
       "description": "Programming toxicology, ontologies, and chemical hazard models. Part of the [**Ontox Project**](https://ontox-project.eu/)\n",
       "author": [],
-      "contents": "\n\n\n\n\n\nModel every sysrev\n\n\n\nmodified\n2022-03-13 03:58:30\n\n\nAttention and transfer learning for millions of labels.\n\n\n\n\n\n\nAutomating Title Abstract Discovery\n\n\n\nmodified\n2022-03-13 03:51:50\n\n\n`srmodel::tiab` automates titles/abstracts extraction from html.\n\n\n\n\n\n\nPredictions and pmids\n\n\n\nmodified\n2022-03-13 03:42:14\n\n\nproject-predictions-and-pmids\n\n\n\n\n\nSysrev to SBML\n\n\n\nmodified\n2022-03-12 22:14:36\n\n\nBuild SBML from Sysrev Tables\n\n\n\n\nAdd a post\ngit clone ontox-hu/ontoxdev and:\n\n\ndevtools::load_all(\"ontoxdev\")   # load ontoxdev\nontoxdev::create_post(\"my-post\") # create the post\nontoxdev::render_site()          # render the site\n\n\n\ncommit your changes and push them to ontox-hu/ontoxdev\n\n\n\n",
-      "last_modified": "2022-03-12T23:01:44-05:00"
+      "contents": "\n\n\n\n\n\nConnecting to ontox4j\n\n\n\nmodified\n2022-03-14 02:43:02\n\n\nConnect and query the ontox4j graph database. TODO don't use distill\n\n\n\n\n\n\nPredictions and pmids\n\n\n\nmodified\n2022-03-13 04:04:50\n\n\nproject-predictions-and-pmids\n\n\n\n\n\nSysrev to SBML\n\n\n\nmodified\n2022-03-13 04:04:50\n\n\nBuild SBML from Sysrev Tables\n\n\n\n\n\nModel every sysrev\n\n\n\nmodified\n2022-03-13 03:58:30\n\n\nAttention and transfer learning for millions of labels.\n\n\n\n\n\n\nAutomating Title Abstract Discovery\n\n\n\nmodified\n2022-03-13 03:51:50\n\n\n`srmodel::tiab` automates titles/abstracts extraction from html.\n\n\n\n\n\nAdd a post\ngit clone ontox-hu/ontoxdev and:\n\n\ndevtools::load_all(\"ontoxdev\")   # load ontoxdev\nontoxdev::create_post(\"my-post\") # create the post\nontoxdev::render_site()          # render the site\n\n\n\ncommit your changes and push them to ontox-hu/ontoxdev\n\n\n\n",
+      "last_modified": "2022-03-13T22:50:29-04:00"
     }
   ],
   "collections": ["posts/posts.json"]
