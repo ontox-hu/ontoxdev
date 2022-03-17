@@ -1,0 +1,166 @@
+---
+title: "aspis-chemicals"
+description: |
+  A short description of the post.
+author:
+  - name: Thomas Luechtefeld
+    url: {}
+date: 2022-03-17
+output:
+  distill::distill_article:
+    self_contained: false
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
+```
+
+## Introduction
+This workflow describes how to retrieve literature for a given compound name and a given query context (query) from the PubMed database. Information on compounds (e.g. its synonyms is retrieved using the PubChem api).
+
+## Packages
+```{r}
+library(tidyverse)
+library(litsearchr)
+library(rentrez)
+library(easyPubMed)
+library(europepmc)
+library(readxl)
+library(webchem)
+# install.packages("googlesheets4")
+library(googlesheets4)
+```
+
+## Documentation
+
+ - [`{rentrez}`](https://cran.r-project.org/web/packages/rentrez/vignettes/rentrez_tutorial.html#finding-cross-references-entrez_link)
+ - [`{webchem}`](https://github.com/ropensci/webchem)
+ - 
+
+## List of chemicals 
+Here we load the Googlesheet file containing compound info from the ASPIS project cluster for which we will build the query and perform the search. 
+
+see for workflow on how to use R to connect to Googlesheets: https://www.r-bloggers.com/2021/12/how-to-connect-r-to-google-sheets-using-googlesheets4/
+
+To initiate the authentication for your Google account run `gs4_auth()` in the Console. You are presented with the option to select an eaxisting google account or to add a new one. You may choose to link the current session to an already cached token (press enter after selecting the apporpriate Google account), or choose '0' to obtain a new token. 
+
+The Googlesheet we are trying to access here is in 'everybode who has the link has access' mode. So we do not need to authenticate. We can use `gs4_deauth()` here, which in this case is safer to use.
+
+The url to the sheet is stored as a cached value, to not who it here in the code. We use the RStudio API to achieve this
+
+
+```{r, eval=FALSE}
+gs4_deauth()
+url_sheet <- rstudioapi::askForSecret(name = "url_sheet")
+data_sheet <- read_sheet(url_sheet)
+data_sheet
+```
+
+## Clean and select data
+Let's clean up and reduce the amount of data. Steps to take:
+
+ - Clean up variable names to make them unix-safe
+ - The file is not tidy, the columns "Project ID (RISK-HUNT3R)", 
+ "Project ID (ONTOX)", "Project ID (PrecisionTox)", "Used in RISK-HUNT3R", 
+ "Used in ONTOX", "Used in PrecisionTox" contain variables 
+ (`project_id` & `used_in_project`), that are    spread over multiple columns. 
+ Here we will not use the information in these columns, so I will remove them
+
+```{r}
+data_tidy <- data_sheet |>
+  janitor::clean_names() |>
+  dplyr::select(-c("project_id_risk_hunt3r":"used_in_precision_tox"))
+ data_tidy
+```
+
+## Add CID 
+CID is the PubChem id. We need this id for other things.
+```{r, get_cids_from_names, eval=FALSE}
+## get all CID for all chemicals by name
+## wrap get_cid() in function with a pause, not to overburden the NCBI server.
+get_cid_with_pause <- function(..., wait = 0.5){
+  
+  x <- get_cid(...)
+  profvis::pause(wait)
+  return(x)
+  
+}
+
+hold = 2
+
+data_tidy <- data_tidy |>
+  mutate(
+    cid = map(
+    .x = inchi,
+    get_cid_with_pause,
+    verbose = TRUE,
+    from = 'inchi',
+    wait = hold)
+  )
+
+data_tidy <- data_tidy |>
+  unnest(cid) |>
+  dplyr::select(
+    compound_name,
+    iupac,
+    inchi,
+    smiles,
+    cas_number,
+    dtxsid,
+    cid
+  )
+```
+
+## Enrich compound data with synonyms 
+See [PUG-REST API PubChem](https://pubchemdocs.ncbi.nlm.nih.gov/pug-rest) for all attributes that can be retrieved. 
+```{r, get_synonyms_and_inchi_from_names, eval=FALSE}
+get_synonyms_with_pause <- function(..., wait = 0.5){
+  
+  x <- pc_synonyms(...)
+  profvis::pause(wait)
+  return(x)
+  
+}
+
+data_tidy <- data_tidy |>
+  mutate(
+    synonyms = map(
+      cid,
+      get_synonyms_with_pause,
+      from = "cid",
+      wait = hold, 
+      verbose = TRUE)) 
+
+data_tidy <- data_tidy |>
+  unnest(synonyms) |>
+  dplyr::select(
+    compound_name,
+    synonyms,
+    iupac,
+    inchi,
+    smiles,
+    cas_number,
+    dtxsid,
+    cid
+  )
+
+## write as dataset to package
+data_ASPIS_with_cid <- data_tidy
+
+## usethis::use_data(data_ASPIS_with_cid)
+
+```
+
+## Result
+```{r}
+
+data_ASPIS_with_cid
+```
+
+
+Distill is a publication format for scientific and technical writing, native to the web.
+
+Learn more about using Distill at <https://rstudio.github.io/distill>.
+
+

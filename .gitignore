@@ -2,6 +2,3 @@
 .Rhistory
 .RData
 .Ruserdata
-
-# ignore everything in _posts except Rmd files
-_posts/**
